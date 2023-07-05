@@ -30,8 +30,14 @@ urlpatterns = [
     # path("SysUser/", views.find_page, name="find_page"),
     path("SysUser/", views.controller_SysUser, name="controller_SysUser"),
     path("SysUser/delete/<int:pk>", views.delete_SysUser, name="delete_SysUser"),
-    # path("SysUser/delete/<int:pk>", views.SysUserViews.as_view({'delete': 'delete_SysUser'}), name='delete_SysUser')
-    # path('login/', views.login),
+    path('login/', views.login),
+    path("OldPerson/", views.controller_OldPerson, name="controller_OldPerson"),
+    path("OldPerson/delete/<int:pk>", views.delete_OldPerson, name="delete_OldPerson"),
+    path("Employee/", views.controller_Employee, name="controller_Employee"),
+    path("Employee/delete/<int:pk>", views.delete_Employee, name="delete_Employee"),
+    path("Volunteer/", views.controller_Volunteer, name="controller_Volunteer"),
+    path("Volunteer/delete/<int:pk>", views.delete_Volunteer, name="delete_Volunteer"),
     # path('list_oldPerson/', views.list_oldPerson),
-    # path('add_oldPerson/', views.add_oldPerson)
+    # path('add_oldPerson/', views.add_oldPerson),
+    # path("SysUser/delete/<int:pk>", views.SysUserViews.as_view({'delete': 'delete_SysUser'}), name='delete_SysUser')
 ]

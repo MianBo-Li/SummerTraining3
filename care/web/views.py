@@ -11,6 +11,159 @@ from .serializers import SysUserSerializer
 from web import models
 
 
+def login(request):
+    data = json.loads(request.body)
+    username = data.get('username')
+    password = data.get('password')
+
+    try:
+        sys_user = models.SysUser.objects.get(username=username, password=password)
+        return JsonResponse({'success': '登录成功', 'user': sys_user.to_dict()}, status=200)
+    except models.SysUser.DoesNotExist:
+        return JsonResponse({'error': '用户名或密码错误'}, status=400)
+
+
+@csrf_exempt
+def controller_OldPerson(request):
+    if request.method == 'GET':
+        page_num = int(request.GET.get('pageNum', 1))
+        page_size = int(request.GET.get('pageSize', 10))
+        search = request.GET.get('username', '')
+
+        query = models.OldPerson.objects.all()
+        if search:
+            query = query.filter(name__contains=search)
+
+        query = query.order_by('id')  # 假设按照 id 字段进行排序
+        paginator = Paginator(query, page_size)
+        try:
+            user_page = paginator.page(page_num)
+            users = user_page.object_list
+            result = {
+                'data': list(users.values()),
+                'total': paginator.count,
+                'page_num': user_page.number,
+                'page_size': page_size
+            }
+            return JsonResponse(result)
+        except EmptyPage:
+            return JsonResponse({'error': 'Invalid page number'}, status=400)
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        old_person = models.OldPerson(**data)
+        old_person.save()
+        return JsonResponse({'success': '保存成功'}, status=200)
+    elif request.method == 'PUT':
+        data = json.loads(request.body)
+        old_person = models.OldPerson.objects.filter(id=data['id'])
+        for key, value in data.items():
+            setattr(old_person, key, value)
+        old_person.save()
+        return JsonResponse({'success': '更新成功'}, status=200)
+
+
+@csrf_exempt
+def delete_OldPerson(request, pk=None):
+    # user_id = int(request.GET.get('id'))
+    user_id = int(pk)
+    models.OldPerson.objects.filter(id=user_id).delete()
+    return JsonResponse({'success': '删除成功'}, status=200)
+
+
+@csrf_exempt
+def controller_Employee(request):
+    if request.method == 'GET':
+        page_num = int(request.GET.get('pageNum', 1))
+        page_size = int(request.GET.get('pageSize', 10))
+        search = request.GET.get('username', '')
+
+        query = models.Employee.objects.all()
+        if search:
+            query = query.filter(name__contains=search)
+
+        query = query.order_by('id')  # 假设按照 id 字段进行排序
+        paginator = Paginator(query, page_size)
+        try:
+            user_page = paginator.page(page_num)
+            users = user_page.object_list
+            result = {
+                'data': list(users.values()),
+                'total': paginator.count,
+                'page_num': user_page.number,
+                'page_size': page_size
+            }
+            return JsonResponse(result)
+        except EmptyPage:
+            return JsonResponse({'error': 'Invalid page number'}, status=400)
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        employee = models.Employee(**data)
+        employee.save()
+        return JsonResponse({'success': '保存成功'}, status=200)
+    elif request.method == 'PUT':
+        data = json.loads(request.body)
+        employee = models.Employee.objects.filter(id=data['id'])
+        for key, value in data.items():
+            setattr(employee, key, value)
+        employee.save()
+        return JsonResponse({'success': '更新成功'}, status=200)
+
+
+@csrf_exempt
+def delete_Employee(request, pk=None):
+    # user_id = int(request.GET.get('id'))
+    user_id = int(pk)
+    models.Employee.objects.filter(id=user_id).delete()
+    return JsonResponse({'success': '删除成功'}, status=200)
+
+
+@csrf_exempt
+def controller_Volunteer(request):
+    if request.method == 'GET':
+        page_num = int(request.GET.get('pageNum', 1))
+        page_size = int(request.GET.get('pageSize', 10))
+        search = request.GET.get('username', '')
+
+        query = models.Volunteer.objects.all()
+        if search:
+            query = query.filter(username__contains=search)
+
+        query = query.order_by('id')  # 假设按照 id 字段进行排序
+        paginator = Paginator(query, page_size)
+        try:
+            user_page = paginator.page(page_num)
+            users = user_page.object_list
+            result = {
+                'data': list(users.values()),
+                'total': paginator.count,
+                'page_num': user_page.number,
+                'page_size': page_size
+            }
+            return JsonResponse(result)
+        except EmptyPage:
+            return JsonResponse({'error': 'Invalid page number'}, status=400)
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        volunteer = models.Volunteer(**data)
+        volunteer.save()
+        return JsonResponse({'success': '保存成功'}, status=200)
+    elif request.method == 'PUT':
+        data = json.loads(request.body)
+        volunteer = models.Volunteer.objects.filter(id=data['id'])
+        for key, value in data.items():
+            setattr(volunteer, key, value)
+        volunteer.save()
+        return JsonResponse({'success': '更新成功'}, status=200)
+
+
+@csrf_exempt
+def delete_Volunteer(request, pk=None):
+    # user_id = int(request.GET.get('id'))
+    user_id = int(pk)
+    models.Volunteer.objects.filter(id=user_id).delete()
+    return JsonResponse({'success': '删除成功'}, status=200)
+
+
 @csrf_exempt
 def controller_SysUser(request):
     if request.method == 'GET':
@@ -58,30 +211,6 @@ def delete_SysUser(request, pk=None):
     user_id = int(pk)
     models.SysUser.objects.filter(id=user_id).delete()
     return JsonResponse({'success': '删除成功'}, status=200)
-# def find_page(request):
-#     page_num = int(request.GET.get('pageNum', 1))
-#     page_size = int(request.GET.get('pageSize', 10))
-#     search = request.GET.get('username', '')
-#
-#     query = models.SysUser.objects.all()
-#     if search:
-#         query = query.filter(username__contains=search)
-#
-#     query = query.order_by('id')  # 假设按照 id 字段进行排序
-#     paginator = Paginator(query, page_size)
-#     try:
-#         user_page = paginator.page(page_num)
-#         users = user_page.object_list
-#         result = {
-#             'data': list(users.values()),
-#             'total': paginator.count,
-#             'page_num': user_page.number,
-#             'page_size': page_size
-#         }
-#         return JsonResponse(result)
-#     except EmptyPage:
-#         return JsonResponse({'error': 'Invalid page number'}, status=400)
-
 
 # class SysUserViews:
 #
