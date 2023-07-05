@@ -1,0 +1,19 @@
+# Ignore specific file
+filename.txt
+
+# Ignore files with a specific extension
+*.log
+*.md
+
+# Ignore a directory
+directory/
+audios/
+.idea/
+
+# Ignore all files and directories inside a directory
+directory/*
+
+# Ignore multiple files or patterns
+file1.txt
+file2.log
+*.tmp
