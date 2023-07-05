@@ -221,7 +221,7 @@ def delete_SysUser(request, pk=None):
 #         models.SysUser.objects.filter(id=user_id).delete()
 #         return JsonResponse({'success': '删除成功'}, status=200)
 
-# class SysUserViews(viewsets.ModelViewSet):
+# class SysUserViews(view.ModelViewSet):
 #     serializer_class = SysUserSerializer
 #     queryset = models.SysUser.objects.all()
 #
