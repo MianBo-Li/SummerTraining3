@@ -134,7 +134,7 @@ class FaceUtil:
 
             # Add the encoding and name to the lists
             known_encodings.append(encoding)
-            known_names.append((image_path, name))
+            known_names.append(name)
 
         # Serialize the encodings and names
         data = {"encodings": known_encodings, "names": known_names}
