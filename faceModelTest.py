@@ -6,6 +6,7 @@
 python testingfacerecognition.py
 python testingfacerecognition.py --filename room_01.mp4
 '''
+from cv2 import CAP_FFMPEG
 
 # import the necessary packages
 from oldcare.facial import FaceUtil
@@ -23,10 +24,10 @@ args = vars(ap.parse_args())
 # 全局变量
 facial_recognition_model_path = 'Model\\face_recognition_hog.pickle'
 input_video = args['filename']
-
+url='rtmp://114.116.242.87/live'
 # 初始化摄像头
 if not input_video:
-    vs = cv2.VideoCapture(0)
+    vs = cv2.VideoCapture(url,CAP_FFMPEG)
     time.sleep(2)
 else:
     vs = cv2.VideoCapture(input_video)
