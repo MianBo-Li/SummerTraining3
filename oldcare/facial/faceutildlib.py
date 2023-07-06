@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 使用dlib实现人脸检测
-'''
+"""
 import face_recognition
 import cv2
 import pickle
@@ -14,18 +14,32 @@ class FaceUtil:
     tolerance = 0.3
 
     def __init__(self, encoding_file_path=None):
+        """
+        为人脸识别这个类初始化一个实例
+        :param encoding_file_path: None
+        """
 
         if encoding_file_path:
             self.load_embeddings(encoding_file_path)
 
     # load embeddings
     def load_embeddings(self, encoding_file_path):
+        """
+        从所给路径加载人脸模型，读取人脸信息
+        :param encoding_file_path: 人脸模型文件的位置
+        :return:
+        """
         # load the known faces and embeddings
         print("[INFO] loading face encodings...")
         self.data = pickle.loads(open(encoding_file_path, "rb").read())
 
     # face detection
     def get_face_location(self, image):
+        """
+        检测图像中人脸的位置
+        :param image: BGR格式的图像
+        :return:face_location_list (list):表示每个检测到的人脸的边界框坐标的元组列表，格式为（左、上、右、下）。
+        """
         face_location_list = []
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         face_locations = face_recognition.face_locations(
@@ -39,6 +53,13 @@ class FaceUtil:
 
     # face recognition
     def get_face_location_and_name(self, image):
+        """
+        检测图像中人脸的位置并进行识别
+        :param image: BGR格式的图像
+        :return: tuple:包含两个列表的元组
+                - face_location_list (list):表示每个检测到的人脸的边界框坐标的元组列表，格式为（左、上、右、下）。
+                - names (list):与每个检测到的面孔相对应的已识别名称列表。如果未识别出面孔，则指定“未知”作为名称。
+        """
         # convert the input frame from BGR to RGB
         rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -70,7 +91,7 @@ class FaceUtil:
                 counts = {}
 
                 # loop over the matched indexes and maintain a count
-                # for each recognized face face
+                # for each recognized face
                 for i in matched_idxs:
                     name = self.data["names"][i]
                     counts[name] = counts.get(name, 0) + 1
@@ -90,7 +111,15 @@ class FaceUtil:
 
         return face_location_list, names
 
-    def save_embeddings(self,image_paths, output_encoding_file_path):
+    @staticmethod
+    def save_embeddings(image_paths, output_encoding_file_path):
+        """
+        通过已经收集到的人脸信息训练模型并保存
+
+        :param image_paths: 人脸信息数据集的路径 从项目根目录开始的相对路径即可
+        :param output_encoding_file_path: 要输出的模型的位置
+        :return:
+        """
         # error msg
         warning = ''
 
@@ -130,11 +159,18 @@ class FaceUtil:
             encoding = face_recognition.face_encodings(image, face_locations)[0]
 
             # Extract the person name from the image path
+            print(f"[INFO] processing image {i + 1}/{len(image_paths)}")
             name = os.path.basename(os.path.dirname(image_path))
 
             # Add the encoding and name to the lists
             known_encodings.append(encoding)
             known_names.append(name)
+
+            suitable_image_found = True  # Set the flag to True
+
+        # Check if a suitable image was found
+        if not suitable_image_found:
+            raise ValueError("No suitable image found")
 
         # Serialize the encodings and names
         data = {"encodings": known_encodings, "names": known_names}
@@ -145,3 +181,6 @@ class FaceUtil:
 
         if warning:
             print(warning)
+
+        print("[INFO] The facial model has been saved, quit.\n")
+
