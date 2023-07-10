@@ -1,30 +1,33 @@
-import base64
 import os.path
 
+from django.contrib.auth import authenticate, login
+# from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import viewsets, mixins
 from django.http import JsonResponse
-from rest_framework.decorators import action, permission_classes
-from rest_framework.permissions import AllowAny
 from rest_framework.utils import json
 
 from .serializers import get_project_root, download
 from web import models
 
-@csrf_exempt
-def login(request):
-    data = json.loads(request.body)
-    username = data.get('username')
-    password = data.get('password')
 
-    sys_user = models.SysUser.objects.get(username=username, password=password)
-    if sys_user is not None:
-        return JsonResponse({'message': '登录成功', 'code': '0'}, status=200)
-    else:
-        return JsonResponse({'message': "用户名或者密码错误"}, status=500)
-        # return JsonResponse({'success': '登录成功', 'user': sys_user.to_dict()}, status=200)
+@csrf_exempt
+def login_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        # username = request.POST.get('username')
+        # password = request.POST.get('password')
+        print(username)
+        print(password)
+
+        sys_user = models.SysUser.objects.filter(username=username, password=password)
+        print(sys_user.exists())
+        if sys_user.exists():
+            return JsonResponse({'message': '登录成功', 'code': '0'}, status=200)
+        else:
+            return JsonResponse({'message': "用户名或者密码错误"})
 
 
 @csrf_exempt
@@ -189,7 +192,6 @@ def delete_Volunteer(request, pk=None):
     user_id = int(pk)
     models.Volunteer.objects.filter(id=user_id).delete()
     return JsonResponse({'success': '删除成功'}, status=200)
-
 
 # @csrf_exempt
 # def controller_SysUser(request):
