@@ -1,7 +1,4 @@
 import os.path
-
-from django.contrib.auth import authenticate, login
-# from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -19,11 +16,8 @@ def login_view(request):
         password = data.get('password')
         # username = request.POST.get('username')
         # password = request.POST.get('password')
-        print(username)
-        print(password)
 
         sys_user = models.SysUser.objects.filter(username=username, password=password)
-        print(sys_user.exists())
         if sys_user.exists():
             return JsonResponse({'message': '登录成功', 'code': '0'}, status=200)
         else:
@@ -33,9 +27,10 @@ def login_view(request):
 @csrf_exempt
 def download_image(request):
     name = request.POST.get('name')
-    path = get_project_root(name)
+    personnel = request.POST.get('personnel')
+    path = get_project_root(personnel, name)
 
-    print(path)
+    # print(path)
     arr = ['正脸', '向左看', '向右看', '眨眼', '张嘴', '笑']
     for i in range(0, 6):
         act = arr[i]
@@ -74,7 +69,8 @@ def controller_OldPerson(request):
             return JsonResponse({'error': 'Invalid page number'}, status=400)
     elif request.method == 'POST':
         data = json.loads(request.body)
-        path = os.path.join('image', data['name'])
+        path = os.path.join('image', 'OldPerson')
+        path = os.path.join(path, data['name'])
         data['img_dir'] = path
         old_person = models.OldPerson(**data)
         old_person.save()
@@ -123,7 +119,8 @@ def controller_Employee(request):
             return JsonResponse({'error': 'Invalid page number'}, status=400)
     elif request.method == 'POST':
         data = json.loads(request.body)
-        path = os.path.join('image', data['name'])
+        path = os.path.join('image', 'Employee')
+        path = os.path.join(path, data['name'])
         data['img_dir'] = path
         employee = models.Employee(**data)
         employee.save()
@@ -172,7 +169,8 @@ def controller_Volunteer(request):
             return JsonResponse({'error': 'Invalid page number'}, status=400)
     elif request.method == 'POST':
         data = json.loads(request.body)
-        path = os.path.join('image', data['name'])
+        path = os.path.join('image', 'Volunteer')
+        path = os.path.join(path, data['name'])
         data['img_dir'] = path
         volunteer = models.Volunteer(**data)
         volunteer.save()
@@ -250,12 +248,6 @@ def delete_Volunteer(request, pk=None):
 #         models.SysUser.objects.filter(id=user_id).delete()
 #         return JsonResponse({'success': '删除成功'}, status=200)
 
-# class SysUserViews(viewsets.ModelViewSet):
-#     serializer_class = SysUserSerializer
-#     # queryset = models.SysUser.objects.all()
-#
-#     def get_queryset(self):
-#         return models.SysUser.objects.all()
 
 # def list_oldPerson(request):
 #     queryset = models.OldPerson.objects.all()
