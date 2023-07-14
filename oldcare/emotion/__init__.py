@@ -1,1 +1,1 @@
-from .minivggnet import MiniVGGNet
+from .facialEmotionDetect import facial_expression_analysis

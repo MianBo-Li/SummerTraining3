@@ -7,6 +7,8 @@ import cv2
 import pickle
 import os
 
+from cv2 import CV_8UC3
+
 
 class FaceUtil:
     # 超参数
@@ -56,22 +58,28 @@ class FaceUtil:
         """
         检测图像中人脸的位置并进行识别
         :param image: BGR格式的图像
-        :return: tuple:包含两个列表的元组
+        :return: tuple:包含三个列表的元组
                 - face_location_list (list):表示每个检测到的人脸的边界框坐标的元组列表，格式为（左、上、右、下）。
                 - names (list):与每个检测到的面孔相对应的已识别名称列表。如果未识别出面孔，则指定“未知”作为名称。
+                - categories (list): 与每个检测到的面孔相对应的类别列表。
         """
         # convert the input frame from BGR to RGB
-        rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        if image.ndim == 2:
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        else:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         # detect the (x, y)-coordinates of the bounding boxes
         # corresponding to each face in the input frame, then
         # compute the facial embeddings for each face
         boxes = face_recognition.face_locations(
-            rgb, model=self.detection_method)
-        encodings = face_recognition.face_encodings(rgb, boxes)
+            image, model=self.detection_method)
+        encodings = face_recognition.face_encodings(image, boxes)
 
-        # initialize the list of names for each face detected
+        # initialize the list of names and categories for each face detected
         names = []
+        categories = []
 
         # loop over the facial embeddings
         for encoding in encodings:
@@ -81,6 +89,7 @@ class FaceUtil:
                 self.data["encodings"], encoding,
                 tolerance=self.tolerance)
             name = "Unknown"
+            category = "Unknown"
 
             # check to see if we have found a match
             if True in matches:
@@ -93,23 +102,25 @@ class FaceUtil:
                 # loop over the matched indexes and maintain a count
                 # for each recognized face
                 for i in matched_idxs:
-                    name = self.data["names"][i]
-                    counts[name] = counts.get(name, 0) + 1
+                    match_name, match_category = self.data["names"][i]
+                    counts[match_name] = counts.get(match_name, 0) + 1
 
                 # determine the recognized face with the largest
                 # number of votes (note: in the event of an unlikely
                 # tie Python will select first entry in the
                 # dictionary)
                 name = max(counts, key=counts.get)
+                category = match_category
 
             # update the list of names
             names.append(name)
+            categories.append(category)
 
         face_location_list = []
-        for ((top, right, bottom, left)) in boxes:
+        for (top, right, bottom, left) in boxes:
             face_location_list.append((left, top, right, bottom))
 
-        return face_location_list, names
+        return face_location_list, names, categories
 
     @staticmethod
     def save_embeddings(image_paths, output_encoding_file_path):
@@ -121,6 +132,7 @@ class FaceUtil:
         :return:
         """
         # error msg
+        global suitable_image_found
         warning = ''
 
         # Check if the output file already exists
@@ -139,7 +151,7 @@ class FaceUtil:
         # Loop over the image paths
         for i, image_path in enumerate(image_paths):
             # Skip the image if it has already been processed
-            if image_path in known_names:
+            if image_path in [name[0] for name in known_names]:
                 print("[INFO] Skipping already processed image: {}".format(image_path))
                 continue
 
@@ -160,11 +172,12 @@ class FaceUtil:
 
             # Extract the person name from the image path
             print(f"[INFO] processing image {i + 1}/{len(image_paths)}")
+            category_label = os.path.basename(os.path.dirname(os.path.dirname(image_path)))
             name = os.path.basename(os.path.dirname(image_path))
 
             # Add the encoding and name to the lists
             known_encodings.append(encoding)
-            known_names.append(name)
+            known_names.append((name, category_label))
 
             suitable_image_found = True  # Set the flag to True
 
